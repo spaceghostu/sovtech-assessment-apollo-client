@@ -4,11 +4,38 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  HttpLink,
+  from
+} from "@apollo/client";
+import { onError } from "@apollo/client/link/error"
+
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({message}: {message: string}) => console.log(`graphql error: ${message}`))
+  }
+})
+
+const link = from([
+  errorLink,
+  new HttpLink({
+    uri: 'https://sovtech-assessment-calvin.herokuapp.com/graphql',
+  }),
+])
+
+export const client = new ApolloClient({
+  link,
+  cache: new InMemoryCache()
+});
+
 ReactDOM.render(
-  <React.StrictMode>
+  <ApolloProvider client={client}>
     <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+  </ApolloProvider>,
+  document.getElementById('root'),
 );
 
 // If you want to start measuring performance in your app, pass a function
